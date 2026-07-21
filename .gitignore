@@ -1,0 +1,278 @@
+# ================================
+# 操作系统生成的文件
+# ================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ================================
+# 编辑器 / IDE 配置
+# ================================
+
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ IDEA / WebStorm / PyCharm 等
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+target/
+
+# Vim / Neovim
+*.swp
+*.swo
+*.swn
+*.un~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ================================
+# 依赖管理目录
+# ================================
+
+# Node.js (npm / yarn / pnpm)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json   # 如果你希望锁定文件被提交，请删除此行
+yarn.lock           # 同上
+pnpm-lock.yaml      # 同上
+
+# Python (pip / pipenv / poetry)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pip_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+pip-log.txt
+pip-delete-this-directory.txt
+.pdm.toml
+.pdm-python
+.venv/
+data/
+model/
+
+# Java (Maven / Gradle)
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+.gradle/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+gradle-wrapper.properties
+.gradletasknamecache
+
+# Ruby (Bundler)
+.bundle/
+vendor/bundle/
+Gemfile.lock     # 如果你希望锁定文件被提交，请删除此行
+
+# PHP (Composer)
+vendor/
+composer.lock    # 如果你希望锁定文件被提交，请删除此行
+
+# Go
+*.exe
+*.exe~
+*.test
+*.out
+vendor/
+go.sum          # 如果你希望锁定文件被提交，请删除此行
+
+# Rust
+target/
+Cargo.lock      # 如果你希望锁定文件被提交，请删除此行
+
+# ================================
+# 构建输出 / 编译产物
+# ================================
+
+dist/
+build/
+out/
+bin/
+obj/
+lib/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.tgz
+*.7z
+
+# ================================
+# 日志文件
+# ================================
+
+*.log
+*.log.*
+logs/
+log/
+
+# ================================
+# 临时文件 / 缓存
+# ================================
+
+*.tmp
+*.temp
+*.cache
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+
+# ================================
+# 环境变量 / 敏感配置
+# ================================
+
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+.secrets
+secrets/
+credentials
+
+# ================================
+# 测试 / 覆盖率报告
+# ================================
+
+coverage/
+.nyc_output/
+.jacoco/
+test-reports/
+junit.xml
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+
+# ================================
+# 数据库文件
+# ================================
+
+*.db
+*.sqlite
+*.sqlite3
+*.mdb
+*.ldb
+
+# ================================
+# Docker / 容器
+# ================================
+
+.dockerignore   # 如果你需要版本控制 .dockerignore，删除此行
+docker-compose.override.yml
+*.pid
+
+# ================================
+# 其他常见工具
+# ================================
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Ansible
+*.retry
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# LaTeX
+*.aux
+*.log
+*.out
+*.toc
+*.bbl
+*.blg
+*.synctex.gz
+
+# ================================
+# 项目特定（按需启用）
+# ================================
+
+# 例如：如果你的项目是 React 且使用 create-react-app
+# /build
+# /node_modules
+
+# 例如：如果你的项目是 Vue
+# /dist
+# /node_modules
+
+# 例如：如果你的项目是 Angular
+# /dist
+# /node_modules

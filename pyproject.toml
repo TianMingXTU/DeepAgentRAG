@@ -1,0 +1,37 @@
+[project]
+name = "deeprag-coder"
+version = "0.1.0"
+description = "An AI programming assistant that is ready-to-use, deeply analytical, and truly understands code repositories"
+authors = [
+    {name = "TianMingXTU",email = "1600410115@qq.com"}
+]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "chromadb>=1.5.9",
+    "deepagents>=0.6.12",
+    "dotenv>=0.9.9",
+    "langchain>=1.3.14",
+    "langchain-cohere>=0.6.0",
+    "langchain-community>=0.4.2",
+    "langchain-nvidia-ai-endpoints>=1.4.3",
+    "langchain-openai>=1.3.5",
+    "langgraph>=1.2.9",
+    "langgraph-checkpoint-postgres>=3.1.0",
+    "langsmith>=0.10.6",
+    "networkx>=3.6.1",
+    "rank-bm25>=0.2.2",
+    "rich>=15.0.0",
+    "tavily-python>=0.7.26",
+    "tree-sitter>=0.26.0",
+    "tree-sitter-languages>=1.10.2",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+dc = "deeprag_coder.cli.main:app"
