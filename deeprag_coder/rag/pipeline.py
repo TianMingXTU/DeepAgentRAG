@@ -2,18 +2,20 @@
 
 import logging
 from pathlib import Path
-import networkx as nx
 
+import networkx as nx
 from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI
 
 from deeprag_coder.config.settings import get_settings
 from deeprag_coder.rag.chunker.semantic_chunker import SemanticChunker
+from deeprag_coder.rag.context_assembler import assemble_context
 from deeprag_coder.rag.embedder.code_embedder import CodeEmbedder
+from deeprag_coder.rag.knowledge_graph.builder import KnowledgeGraphBuilder
 from deeprag_coder.rag.retriever.hybrid_retriever import HybridRetriever
 from deeprag_coder.rag.retriever.reranker import CodeReranker
 from deeprag_coder.rag.vector_store.chroma_store import ChromaStore
-from deeprag_coder.rag.knowledge_graph.builder import KnowledgeGraphBuilder
+from deeprag_coder.utils.repo_map import generate_repo_map
 
 logger = logging.getLogger(__name__)
 
@@ -105,22 +107,16 @@ class RAGPipeline:
         return docs[:top_k]
 
     def ask(self, query: str) -> str:
-        """检索 + LLM 问答。"""
+        """检索 + LLM 问答（使用 Context Assembler 组装 prompt）。"""
         docs = self.search(query)
-        context = "\n---\n".join(
-            f"{d.metadata.get('file_path', '?')}:\n{d.page_content}" for d in docs
-        )
+        repo_map = generate_repo_map(self.repo_path, max_files=30)
+        prompt = assemble_context(query, docs, repo_map=repo_map)
         cfg = get_settings()
         llm = ChatOpenAI(
             model=cfg.llm.model,
             api_key=cfg.llm.api_key,
             base_url=cfg.llm.base_url,
             temperature=0,
-        )
-        prompt = (
-            "基于以下代码上下文回答用户问题。引用代码时标注文件路径。\n\n"
-            f"## 代码上下文\n{context}\n\n"
-            f"## 问题\n{query}"
         )
         return llm.invoke(prompt).content
 

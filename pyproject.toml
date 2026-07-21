@@ -35,3 +35,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 dc = "deeprag_coder.cli.main:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+]

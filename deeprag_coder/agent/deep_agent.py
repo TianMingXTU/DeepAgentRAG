@@ -1,20 +1,31 @@
-"""DeepRAG-Coder Agent 入口。"""
+"""DeepRAG-Coder Agent 入口 — 演示完整编排能力。"""
+
+import logging
 
 from deeprag_coder.agent.factory import create_deeprag_agent
 from deeprag_coder.rag.pipeline import init_rag
 
+logger = logging.getLogger(__name__)
+
 
 def main():
-    # 1. 初始化
+    logger.info("初始化 RAG 索引")
     n = init_rag()
-    print(f"索引完成: {n} chunks")
+    logger.info("索引完成: %d chunks", n)
 
-    # 2. 启动 Agent
     agent = create_deeprag_agent()
-    result = agent.invoke(
-        {"messages": [{"role": "user", "content": "这个项目的核心架构是什么？"}]}
-    )
-    print(result["messages"][-1].content)
+
+    questions = [
+        "这个项目的核心架构是什么？",
+        "搜索代码中关于 RAG 管道的实现",
+    ]
+
+    for q in questions:
+        logger.info("用户: %s", q)
+        result = agent.invoke(
+            {"messages": [{"role": "user", "content": q}]}
+        )
+        logger.info("回答: %s", result["messages"][-1].content)
 
 
 if __name__ == "__main__":

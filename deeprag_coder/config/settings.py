@@ -13,7 +13,7 @@ load_dotenv()
 class LLMConfig:
     """LLM 模型配置。兼容 OpenAI 兼容 API。"""
 
-    model: str = os.getenv("model", "gpt-4o")
+    model: str = os.getenv("model", "gpt-4o-mini")
     api_key: str = os.getenv("api_key", "")
     base_url: str | None = os.getenv("base_url") or None
     temperature: float = 0.0

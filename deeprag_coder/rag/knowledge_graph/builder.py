@@ -1,14 +1,16 @@
 """知识图谱构建器 — 从 AST 提取符号和调用关系，构建内存有向图。
-
-使用 networkx.DiGraph，节点 = 函数/类符号，边 = 调用关系。
+ 
+ 使用 networkx.DiGraph，节点 = 函数/类符号，边 = 调用关系。
 """
-
+ 
 import logging
 from pathlib import Path
-
+ 
 import networkx as nx
+from langchain_openai import ChatOpenAI
 from tree_sitter import Node as TSNode
-
+ 
+from deeprag_coder.config.settings import get_settings
 from deeprag_coder.rag.chunker.ast_parser import ASTParser, ParsedFile
 
 logger = logging.getLogger(__name__)
@@ -107,6 +109,46 @@ class KnowledgeGraphBuilder:
             G.number_of_nodes(),
             G.number_of_edges(),
         )
+        return G
+
+    def enrich_with_summaries(
+        self, G: nx.DiGraph, batch_size: int = 10
+    ) -> nx.DiGraph:
+        """为关键符号生成 LLM 语义摘要，写入节点属性。
+
+        Args:
+            G: 已有调用关系图。
+            batch_size: 每批摘要的符号数（控制 API 调用成本）。
+
+        Returns:
+            追加了 'summary' 属性的图。
+        """
+        cfg = get_settings()
+        llm = ChatOpenAI(
+            model=cfg.llm.model,
+            api_key=cfg.llm.api_key,
+            base_url=cfg.llm.base_url,
+            temperature=0,
+        )
+        # 选出度/入度最高的符号（核心枢纽节点）
+        scored = [
+            (n, G.out_degree(n) + G.in_degree(n)) for n in G.nodes
+        ]
+        scored.sort(key=lambda x: -x[1])
+        top_symbols = [n for n, _ in scored[:batch_size]]
+
+        for sym in top_symbols:
+            node = G.nodes[sym]
+            kind = node.get("kind", "symbol")
+            prompt = (
+                f"Summarize the purpose of this {kind} `{sym}` in one sentence "
+                f"(file: {node.get('file', '?')}). Keep under 30 words."
+            )
+            try:
+                summary = llm.invoke(prompt).content.strip()
+                G.nodes[sym]["summary"] = summary
+            except Exception as e:
+                logger.warning("摘要生成失败 %s: %s", sym, e)
         return G
 
     def _extract_calls(
