@@ -51,9 +51,11 @@ uv run python path/to/module.py
 ```bash
 dc init                      # 索引当前仓库
 dc init --repo ./my-project  # 索引指定仓库
+dc plan "添加用户认证"        # 分析模式（只读，生成计划）
+dc build "实现 JWT"           # 构建模式（读写，写操作需审批）
 dc ask "JWT 验证在哪？"      # 单次问答
 dc review --file src/a.py    # 单文件代码评审
-dc interactive               # 交互式 REPL 会话
+dc interactive               # 交互式 REPL 会话（内支持 /plan /build /undo /redo）
 ```
 
 ---
@@ -84,15 +86,17 @@ dc interactive               # 交互式 REPL 会话
 deeprag_coder/
 ├── __init__.py                # 版本号（__version__ = "0.1.0"）
 ├── cli/
-│   └── main.py                # Typer CLI: init / ask / review / interactive
+│   └── main.py                # Typer CLI: plan / build / ask / review / interactive
 ├── config/
-│   └── settings.py            # 统一配置入口（LLM / RAG / Search / LangSmith）
+│   ├── settings.py            # 统一配置入口（LLM / RAG / Search / LangSmith）
+│   ├── loader.py              # 4 层配置合并（Defaults → Global JSON → Project JSON → Env）
+│   └── schema.json            # deeprag.json JSON Schema
 ├── agent/                     # Deep Agents 智能体编排
-│   ├── factory.py             # create_deeprag_agent() — 全参数装配工厂
-│   ├── prompts.py             # 系统提示词（编码专家角色）
+│   ├── factory.py             # create_deeprag_agent(mode="plan"|"build") — 全参数装配工厂
+│   ├── prompts.py             # 系统提示词（编码专家角色，含 @mention 子智能体指令）
 │   ├── profiles.py            # HarnessProfile 预设（按模型调优）
 │   ├── subagents.py           # 子智能体定义（code-analyzer / doc-generator / refactor）
-│   └── permissions.py         # 文件系统权限规则（源码写保护）
+│   └── permissions.py         # PermissionRule + build_deepagents_permissions()（源码写保护）
 ├── memory/
 │   └── project_context.py     # CompositeBackend + StoreBackend 持久化记忆
 ├── rag/                       # 代码专用 RAG 管道
@@ -117,7 +121,8 @@ deeprag_coder/
 │   ├── rag_ask.py             # 基于 RAG 上下文的代码问答
 │   ├── graph_query.py         # 知识图谱查询（callers / callees / impact chain）
 │   ├── code_analyze.py        # 代码深度分析（RAG + 图依赖）
-│   └── doc_generate.py        # 文档/注释生成
+│   ├── doc_generate.py        # 文档/注释生成
+│   └── lsp_tool.py            # LSP 工具（goto def / 引用查找，pyright → grep 回退）
 ├── skills/                    # Agent Skills（Agent Skills 规范）
 │   ├── code-review/           # 代码评审 — 正确性/安全/性能/风格
 │   │   ├── SKILL.md
@@ -168,11 +173,11 @@ tests/                         # 单元测试
 | 本项目模块                  | Deep Agents 接入点                       |
 | --------------------------- | ---------------------------------------- |
 | `agent/factory.py`          | `create_deep_agent()` — 全参数装配       |
-| `tools/*` (5 个)            | `tools=[rag_search, rag_ask, ...]`       |
+| `tools/*` (7 个)            | `tools=[rag_search, rag_ask, ...]`       |
 | `skills/*` (4 个)           | `skills=["/skills/..."]`                 |
 | `memory/project_context.py` | `memory=["/memories/AGENTS.md"]`         |
 | `agent/subagents.py`        | `subagents=[code_analyzer, doc_gen, ...]`|
-| `agent/permissions.py`      | `permissions=[DENY_SELF_WRITE, ...]`     |
+| `agent/permissions.py`      | `permissions=build_deepagents_permissions(rules, mode)` |
 | `agent/profiles.py`         | `register_harness_profile()` 全局注册     |
 | `rag/pipeline.py`           | 不直接对接框架，由 Tool 内部调用         |
 

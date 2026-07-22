@@ -1,5 +1,8 @@
-# deeprag_coder/config/settings.py
-"""配置管理 — 所有环境变量和默认值的单一入口。"""
+"""配置管理 — 默认值工厂 + 分层加载入口。
+
+保留默认值为 fallback，实际运行时由 config/loader.py 执行
+Defaults → Global JSON → Project JSON → Env 四层合并。
+"""
 
 import os
 from dataclasses import dataclass, field
@@ -13,71 +16,57 @@ load_dotenv()
 class LLMConfig:
     """LLM 模型配置。兼容 OpenAI 兼容 API。"""
 
-    model: str = os.getenv("model", "gpt-4o-mini")
-    api_key: str = os.getenv("api_key", "")
-    base_url: str | None = os.getenv("base_url") or None
-    temperature: float = 0.0
+    model: str = os.environ.get("DEEPAGENT_MODEL", os.environ.get("model", "gpt-4o-mini"))
+    api_key: str = os.environ.get("DEEPAGENT_API_KEY", os.environ.get("api_key", ""))
+    base_url: str | None = os.environ.get("DEEPAGENT_BASE_URL", os.environ.get("base_url", None))
+    temperature: float = float(os.environ.get("DEEPAGENT_TEMPERATURE", "0.0"))
 
 
 @dataclass
 class RAGConfig:
     """RAG 管道配置。"""
 
-    # 分块参数
-    chunk_max_lines: int = 150
-    chunk_overlap_lines: int = 20
-    min_chunk_lines: int = 10
-
-    # 嵌入
-    embedding_model: str = os.getenv("embedding_model", "Qwen/Qwen3-Embedding-0.6B")
-    embedding_base_url: str | None = os.getenv("embedding_base_url") or None
-    embedding_api_key: str = os.getenv("embedding_api_key", "")
-    embedding_batch_size: int = 50
-
-    # 检索
+    chunk_max_lines: int = int(os.environ.get("DEEPAGENT_CHUNK_MAX_LINES", "150"))
+    chunk_overlap_lines: int = int(os.environ.get("DEEPAGENT_CHUNK_OVERLAP", "20"))
+    min_chunk_lines: int = int(os.environ.get("DEEPAGENT_MIN_CHUNK_LINES", "10"))
+    embedding_model: str = os.environ.get("DEEPAGENT_EMBEDDING_MODEL", os.environ.get("embedding_model", "Qwen/Qwen3-Embedding-0.6B"))
+    embedding_base_url: str | None = os.environ.get("DEEPAGENT_EMBEDDING_BASE_URL", os.environ.get("embedding_base_url", None))
+    embedding_api_key: str = os.environ.get("DEEPAGENT_EMBEDDING_API_KEY", os.environ.get("embedding_api_key", ""))
+    embedding_batch_size: int = int(os.environ.get("DEEPAGENT_EMBEDDING_BATCH_SIZE", "50"))
     top_k: int = 10
-    bm25_weight: float = 0.3  # BM25 在混合检索中的权重
-    semantic_weight: float = 0.7  # 向量相似度权重
-
-    # 向量库
+    bm25_weight: float = 0.3
+    semantic_weight: float = 0.7
     vector_db_path: Path = Path("data/vector_store")
     collection_name: str = "deeprag_code"
 
 
-# 在 RAGConfig 之后追加
 @dataclass
 class RerankConfig:
-    """Rerank 二次精排配置。
+    """Rerank 二次精排配置。"""
 
-    默认走 Cohere 云端 rerank API；base_url 设置后可指向
-    任意 Cohere 协议兼容的 /v1/rerank 端点（如 SiliconFlow）。
-    """
-
-    enabled: bool = os.getenv("rerank_enabled", "false").lower() == "true"
-    provider: str = os.getenv(
-        "rerank_provider", "cohere"
-    )  # 预留：cohere / nvidia / jina
-    model: str = os.getenv("rerank_model", "rerank-multilingual-v3.0")
-    top_n: int = int(os.getenv("rerank_top_n", "5"))
-    api_key: str = os.getenv("cohere_api_key", "")
-    base_url: str | None = os.getenv("rerank_base_url") or None
+    enabled: bool = False
+    provider: str = "cohere"
+    model: str = "rerank-multilingual-v3.0"
+    top_n: int = 5
+    api_key: str = ""
+    base_url: str | None = None
 
 
 @dataclass
 class SearchConfig:
     """外部搜索配置。"""
 
-    tavily_key: str = os.getenv("tavily_key", "")
+    tavily_key: str = ""
 
 
 @dataclass
 class LangSmithConfig:
     """LangSmith 观测配置。"""
 
-    enabled: bool = os.getenv("LANGSMITH_TRACING", "true").lower() == "true"
-    endpoint: str = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
-    api_key: str = os.getenv("LANGSMITH_API_KEY", "")
-    project: str = os.getenv("LANGSMITH_PROJECT", "deeprag-coder")
+    enabled: bool = True
+    endpoint: str = "https://api.smith.langchain.com"
+    api_key: str = ""
+    project: str = "deeprag-coder"
 
     def configure(self) -> None:
         """注入 LangSmith 环境变量（若未已经设置）。"""
@@ -97,22 +86,21 @@ class Settings:
     search: SearchConfig = field(default_factory=SearchConfig)
     langsmith: LangSmithConfig = field(default_factory=LangSmithConfig)
     rerank: RerankConfig = field(default_factory=RerankConfig)
-
-    # 仓库路径（运行时动态设置）
     repo_path: Path = Path.cwd()
     data_dir: Path = Path("data")
-
     verbose: bool = False
 
 
-# 全局单例
 _settings: Settings | None = None
 
 
 def get_settings() -> Settings:
+    """获取配置（首次调用时从 loader 加载）。"""
     global _settings
     if _settings is None:
-        _settings = Settings()
+        # ponytail: lazy import to avoid circular dep
+        from deeprag_coder.config.loader import load_config
+        _settings = load_config()
         _settings.langsmith.configure()
     return _settings
 

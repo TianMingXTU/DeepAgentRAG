@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DeepRAG-Coder Configuration",
+  "description": "Configuration schema for deeprag.json (project-level config)",
+  "type": "object",
+  "properties": {
+    "llm": {
+      "type": "object",
+      "description": "LLM model configuration",
+      "properties": {
+        "model": { "type": "string", "description": "Model name", "default": "gpt-4o-mini" },
+        "api_key": { "type": "string", "description": "API key" },
+        "base_url": { "type": "string", "description": "API base URL" },
+        "temperature": { "type": "number", "default": 0.0 }
+      }
+    },
+    "rag": {
+      "type": "object",
+      "description": "RAG pipeline configuration",
+      "properties": {
+        "chunk_max_lines": { "type": "integer", "default": 150 },
+        "chunk_overlap_lines": { "type": "integer", "default": 20 },
+        "min_chunk_lines": { "type": "integer", "default": 10 },
+        "embedding_model": { "type": "string" },
+        "embedding_base_url": { "type": "string" },
+        "top_k": { "type": "integer", "default": 10 },
+        "bm25_weight": { "type": "number", "default": 0.3 },
+        "semantic_weight": { "type": "number", "default": 0.7 }
+      }
+    },
+    "search": {
+      "type": "object",
+      "properties": {
+        "tavily_key": { "type": "string" }
+      }
+    },
+    "langsmith": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": true },
+        "endpoint": { "type": "string" },
+        "api_key": { "type": "string" },
+        "project": { "type": "string" }
+      }
+    },
+    "rerank": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "model": { "type": "string" },
+        "top_n": { "type": "integer", "default": 5 },
+        "api_key": { "type": "string" },
+        "base_url": { "type": "string" }
+      }
+    },
+    "repo_path": { "type": "string" },
+    "data_dir": { "type": "string" },
+    "verbose": { "type": "boolean", "default": false }
+  }
+}
